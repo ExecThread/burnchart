@@ -81,6 +81,16 @@ export default {
 
   // Get all issues for a state..
   allIssues: (user, { owner, name, milestone }, query, cb) => {
+    if(query.state === 'readytomerge')
+    {
+        query.state = 'open';
+        query.labels='4%20-%20Ready%20To%20Merge';
+    }
+    else if(query.state === 'reviewnotify')
+    {
+        query.state = 'open';
+        query.labels='5%20-%20Review%2FNotify';
+    }
     let token = (user && user.github != null) ? user.github.accessToken : null;
     let data = _.defaults({
       'path': `/repos/${owner}/${name}/issues`,
@@ -96,7 +106,7 @@ export default {
 // Make a request using SuperAgent.
 let request = ({ protocol, host, path, query, headers }, cb) => {
   let exited = false;
-  
+
   // Make the query params.
   let q = '';
   if (query) {
@@ -144,7 +154,7 @@ let headers = (token) => {
   };
   // Add token?
   if (token) h.Authorization = `token ${token}`;
-  
+
   return h;
 };
 
@@ -156,11 +166,11 @@ let error = (err) => {
     case !_.isString(err):
       text = err;
       break;
-    
+
     case !_.isArray(err):
       text = err[1];
       break;
-    
+
     case !(_.isObject(err) && _.isString(err.message)):
       text = err.message;
   }
@@ -172,6 +182,6 @@ let error = (err) => {
       text = err.toString();
     }
   }
-  
+
   return text;
 };

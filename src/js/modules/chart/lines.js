@@ -16,22 +16,22 @@ export default {
       'date': moment(created_at, moment.ISO_8601).toJSON(),
       'points': total
     }];
-    
+
     min = +Infinity , max = -Infinity;
 
     // Generate the actual closes.
     let rest = _.map(issues, (issue) => {
-      let { size, closed_at } = issue;
+      let { size, closed_at, updated_at } = issue;
       // Determine the range.
       if (size < min) min = size;
       if (size > max) max = size;
 
       // Dropping points remaining.
-      issue.date = moment(closed_at, moment.ISO_8601).toJSON();
+      issue.date = moment(closed_at || updated_at, moment.ISO_8601).toJSON();
       issue.points = total -= size;
       return issue;
     });
-    
+
     // Now add a radius in a range (will be used for a circle).
     let range = d3.scale.linear().domain([ min, max ]).range([ 5, 8 ]);
 
@@ -74,11 +74,11 @@ export default {
 
       // Go again?
       if (!(day > b)) once(inc + 1);
-    })(0); 
+    })(0);
 
     // Map points on the array of days now.
     let velocity = total / (length - 1);
-    
+
     days = _.map(days, (day, i) => {
       day.points = total;
       if (days[i] && !days[i].off_day) total -= velocity;

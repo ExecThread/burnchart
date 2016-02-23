@@ -10,8 +10,20 @@ export default {
     // For each `open` and `closed` issues in parallel.
     async.parallel([
       _.partial(oneStatus, user, repo, 'open'),
-      _.partial(oneStatus, user, repo, 'closed')
-    ], (err=null, [ open, closed ]) => {
+      _.partial(oneStatus, user, repo, 'closed'),
+      _.partial(oneStatus, user, repo, 'readytomerge'),
+      _.partial(oneStatus, user, repo, 'reviewnotify'),
+    ], (err=null, [ open, closed, readytomerge, reviewnotify ]) => {
+      open = _.filter(open.list, function(issue) // Remove things that are pseudo-closed
+      {
+        return !_.findWhere(readytomerge.list, _.pick(issue, 'id')) &&
+               !_.findWhere(reviewnotify.list, _.pick(issue, 'id'));
+      });
+      open = calcSize(_.sortBy(open, 'updated_at')); // Recalculate size and sort
+
+      closed = _.union(closed.list, readytomerge.list, reviewnotify.list) // Add in the pseudo-closed things
+      closed = calcSize(_.sortBy(closed, 'updated_at')); // Recalculate size and sort
+
       cb(err, { open, closed });
     });
   }
@@ -68,13 +80,13 @@ let calcSize = (list) => {
 let oneStatus = (user, repo, state, cb) => {
   // Concat them here.
   let results = [];
-  
+
   let done = (err) => {
     if (err) return cb(err);
     // Sort by closed time and add the size.
-    cb(null, calcSize(_.sortBy(results, 'closed_at')));
+    cb(null, calcSize(_.sortBy(results, 'updated_at')));
   };
-  
+
   let fetchPage;
   // One pageful fetch (next pages in series).
   return (fetchPage = (page) => {
