@@ -56699,6 +56699,8 @@ exports.default = _react2.default.createClass({
     }).value();
 
     // Now for the list of milestones, index sorted.
+    var totalCompleted = 0;
+    var totalStillOpen = 0;
     var list = [];
     _lodash2.default.each(projects.index, function (_ref) {
       var _ref2 = _slicedToArray(_ref, 2);
@@ -56711,6 +56713,10 @@ exports.default = _react2.default.createClass({
       var milestones = _projects$list$pI.milestones;
 
       var milestone = milestones[mI];
+      var completed = milestone.issues.closed.size;
+      var stillOpen = milestone.issues.open.size;
+      totalCompleted += completed;
+      totalStillOpen += stillOpen;
 
       // Filter down?
       if (!(!project || project.owner == owner && project.name == name)) return;
@@ -56753,6 +56759,10 @@ exports.default = _react2.default.createClass({
             _react2.default.createElement(
               'span',
               { className: 'percent' },
+              completed,
+              '/',
+              completed + stillOpen,
+              ' ',
               Math.floor(milestone.stats.progress.points),
               '%'
             ),
@@ -56773,6 +56783,7 @@ exports.default = _react2.default.createClass({
         )
       ));
     });
+    var totalCompletePercent = 100 * totalCompleted / (totalCompleted + totalStillOpen);
 
     // Wait for something to show.
     if (!errors.length && !list.length) return false;
@@ -56786,16 +56797,65 @@ exports.default = _react2.default.createClass({
           'div',
           { className: 'header' },
           _react2.default.createElement(
-            'a',
-            { className: 'sort', onClick: this._onSort },
-            _react2.default.createElement(_Icon2.default, { name: 'sort' }),
-            ' Sorted by ',
-            projects.sortBy
-          ),
-          _react2.default.createElement(
-            'h2',
+            'table',
             null,
-            'Milestones'
+            _react2.default.createElement(
+              'tbody',
+              null,
+              _react2.default.createElement(
+                'tr',
+                null,
+                _react2.default.createElement(
+                  'td',
+                  null,
+                  _react2.default.createElement(
+                    'h2',
+                    null,
+                    'Milestones'
+                  )
+                ),
+                _react2.default.createElement(
+                  'td',
+                  { style: { 'width': '1%' } },
+                  _react2.default.createElement(
+                    'div',
+                    { className: 'progress' },
+                    _react2.default.createElement(
+                      'span',
+                      { className: 'percent' },
+                      Math.floor(totalCompletePercent),
+                      '%'
+                    ),
+                    _react2.default.createElement(
+                      'span',
+                      { className: 'black' },
+                      totalCompleted,
+                      '/',
+                      totalCompleted + totalStillOpen
+                    ),
+                    _react2.default.createElement(
+                      'div',
+                      { className: 'outer bar' },
+                      _react2.default.createElement('div', {
+                        className: (0, _classnames2.default)('inner', 'bar', { 'black': true }),
+                        style: { 'width': totalCompletePercent + '%' }
+                      })
+                    )
+                  )
+                ),
+                _react2.default.createElement(
+                  'td',
+                  null,
+                  _react2.default.createElement(
+                    'a',
+                    { className: 'sort', onClick: this._onSort },
+                    _react2.default.createElement(_Icon2.default, { name: 'sort' }),
+                    ' Sorted by ',
+                    projects.sortBy
+                  )
+                )
+              )
+            )
           )
         ),
         _react2.default.createElement(
@@ -56818,16 +56878,65 @@ exports.default = _react2.default.createClass({
           'div',
           { className: 'header' },
           _react2.default.createElement(
-            'a',
-            { className: 'sort', onClick: this._onSort },
-            _react2.default.createElement(_Icon2.default, { name: 'sort' }),
-            ' Sorted by ',
-            projects.sortBy
-          ),
-          _react2.default.createElement(
-            'h2',
+            'table',
             null,
-            'Projects'
+            _react2.default.createElement(
+              'tbody',
+              null,
+              _react2.default.createElement(
+                'tr',
+                null,
+                _react2.default.createElement(
+                  'td',
+                  null,
+                  _react2.default.createElement(
+                    'h2',
+                    null,
+                    'Projects'
+                  )
+                ),
+                _react2.default.createElement(
+                  'td',
+                  { style: { 'width': '1%' } },
+                  _react2.default.createElement(
+                    'div',
+                    { className: 'progress' },
+                    _react2.default.createElement(
+                      'span',
+                      { className: 'percent' },
+                      Math.floor(totalCompletePercent),
+                      '%'
+                    ),
+                    _react2.default.createElement(
+                      'span',
+                      { className: 'black' },
+                      totalCompleted,
+                      '/',
+                      totalCompleted + totalStillOpen
+                    ),
+                    _react2.default.createElement(
+                      'div',
+                      { className: 'outer bar' },
+                      _react2.default.createElement('div', {
+                        className: (0, _classnames2.default)('inner', 'bar', { 'black': true }),
+                        style: { 'width': totalCompletePercent + '%' }
+                      })
+                    )
+                  )
+                ),
+                _react2.default.createElement(
+                  'td',
+                  null,
+                  _react2.default.createElement(
+                    'a',
+                    { className: 'sort', onClick: this._onSort },
+                    _react2.default.createElement(_Icon2.default, { name: 'sort' }),
+                    ' Sorted by ',
+                    projects.sortBy
+                  )
+                )
+              )
+            )
           )
         ),
         _react2.default.createElement(

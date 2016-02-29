@@ -36,10 +36,16 @@ export default React.createClass({
     }).value();
 
     // Now for the list of milestones, index sorted.
+    let totalCompleted = 0;
+    let totalStillOpen = 0;
     let list = [];
     _.each(projects.index, ([ pI, mI ]) => {
       let { owner, name, milestones } = projects.list[pI];
       let milestone = milestones[mI];
+      let completed = milestone.issues.closed.size;
+      let stillOpen = milestone.issues.open.size;
+      totalCompleted += completed;
+      totalStillOpen += stillOpen;
 
       // Filter down?
       if (!(!project || (project.owner == owner && project.name == name))) return;
@@ -64,7 +70,7 @@ export default React.createClass({
           </td>
           <td style={{ 'width': '1%' }}>
             <div className="progress">
-              <span className="percent">{Math.floor(milestone.stats.progress.points)}%</span>
+              <span className="percent">{completed}/{completed+stillOpen} {Math.floor(milestone.stats.progress.points)}%</span>
               <span className={cls('due', { 'red': milestone.stats.isOverdue })}>
                 {format.due(milestone.due_on)}
               </span>
@@ -79,6 +85,7 @@ export default React.createClass({
         </tr>
       );
     });
+    let totalCompletePercent = 100*totalCompleted/(totalCompleted+totalStillOpen);
 
     // Wait for something to show.
     if (!errors.length && !list.length) return false;
@@ -88,8 +95,24 @@ export default React.createClass({
       return (
         <div id="projects">
           <div className="header">
-            <a className="sort" onClick={this._onSort}><Icon name="sort"/> Sorted by {projects.sortBy}</a>
-            <h2>Milestones</h2>
+            <table><tbody>
+                <tr>
+                    <td><h2>Milestones</h2></td>
+                    <td style={{ 'width': '1%' }}><div className="progress">
+                      <span className="percent">{Math.floor(totalCompletePercent)}%</span>
+                      <span className='black'>
+                        {totalCompleted}/{totalCompleted+totalStillOpen}
+                      </span>
+                      <div className="outer bar">
+                        <div
+                          className={cls('inner', 'bar', { 'black': true })}
+                          style={{ 'width': `${totalCompletePercent}%` }}
+                        />
+                      </div>
+                    </div></td>
+                    <td><a className="sort" onClick={this._onSort}><Icon name="sort"/> Sorted by {projects.sortBy}</a></td>
+                </tr>
+            </tbody></table>
           </div>
           <table>
             <tbody>{list}</tbody>
@@ -102,8 +125,24 @@ export default React.createClass({
       return (
         <div id="projects">
           <div className="header">
-            <a className="sort" onClick={this._onSort}><Icon name="sort"/> Sorted by {projects.sortBy}</a>
-            <h2>Projects</h2>
+            <table><tbody>
+                <tr>
+                    <td><h2>Projects</h2></td>
+                    <td style={{ 'width': '1%' }}><div className="progress">
+                      <span className="percent">{Math.floor(totalCompletePercent)}%</span>
+                      <span className='black'>
+                        {totalCompleted}/{totalCompleted+totalStillOpen}
+                      </span>
+                      <div className="outer bar">
+                        <div
+                          className={cls('inner', 'bar', { 'black': true })}
+                          style={{ 'width': `${totalCompletePercent}%` }}
+                        />
+                      </div>
+                    </div></td>
+                    <td><a className="sort" onClick={this._onSort}><Icon name="sort"/> Sorted by {projects.sortBy}</a></td>
+                </tr>
+            </tbody></table>
           </div>
           <table>
             <tbody>

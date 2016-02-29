@@ -959,6 +959,9 @@ ul li {
 #page #content #projects table tr td .progress .bar.green {
   background: #00b361;
 }
+#page #content #projects table tr td .progress .bar.black {
+  background: #222222;
+}
 #page #content #projects table tr td .progress .due.red {
   color: #C1041C;
   font-weight: bold;
