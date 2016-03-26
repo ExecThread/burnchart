@@ -3,6 +3,8 @@ import _ from 'lodash';
 
 import Page from '../../lib/PageMixin.js';
 
+import format from '../../modules/format.js';
+
 import Notify from '../Notify.jsx';
 import Header from '../Header.jsx';
 import Footer from '../Footer.jsx';
@@ -16,7 +18,7 @@ export default React.createClass({
 
   render() {
     let content;
-    if (!this.state.app.loading) {
+    if (!this.state.app.system.loading) {
       let projects = this.state.projects;
       // Find the milestone.
       let milestone;
@@ -33,7 +35,27 @@ export default React.createClass({
         return false;
       });
 
-      if (milestone) content = <Chart milestone={milestone} />;
+      if (milestone) {
+        let description;
+        if (milestone.description) {
+          description = format.markdown(milestone.description);
+        }
+
+        content = (
+          <div>
+            <div id="title">
+              <div className="wrap">
+                <h2 className="title">{format.title(milestone.title)}</h2>
+                <span className="sub">{format.due(milestone.due_on)}</span>
+                <div className="description">{description}</div>
+              </div>
+            </div>
+            <div id="content" className="wrap">
+              <Chart data={milestone} />
+            </div>
+          </div>
+        );
+      }
     }
 
     return (

@@ -55979,10 +55979,6 @@ var _d3Tip = require('d3-tip');
 
 var _d3Tip2 = _interopRequireDefault(_d3Tip);
 
-var _format = require('../modules/format.js');
-
-var _format2 = _interopRequireDefault(_format);
-
 var _lines = require('../modules/chart/lines.js');
 
 var _lines2 = _interopRequireDefault(_lines);
@@ -56000,73 +55996,36 @@ exports.default = _react2.default.createClass({
   displayName: 'Chart.jsx',
 
   render: function render() {
-    var milestone = this.props.milestone;
-
-    var description = undefined;
-    if (milestone.description) {
-      description = _format2.default.markdown(milestone.description);
-    }
-
-    return _react2.default.createElement(
-      'div',
-      null,
-      _react2.default.createElement(
-        'div',
-        { id: 'title' },
-        _react2.default.createElement(
-          'div',
-          { className: 'wrap' },
-          _react2.default.createElement(
-            'h2',
-            { className: 'title' },
-            _format2.default.title(milestone.title)
-          ),
-          _react2.default.createElement(
-            'span',
-            { className: 'sub' },
-            _format2.default.due(milestone.due_on)
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'description' },
-            description
-          )
-        )
-      ),
-      _react2.default.createElement(
-        'div',
-        { id: 'content', className: 'wrap' },
-        _react2.default.createElement('div', { id: 'chart', ref: 'el' })
-      )
-    );
+    return _react2.default.createElement('div', { id: 'chart', ref: 'el', style: this.props.style });
   },
   componentDidMount: function componentDidMount() {
-    var milestone = this.props.milestone;
+    var data = this.props.data;
 
     // Skip charts that have nothing to show.
-    if (milestone.stats.isEmpty) return;
 
-    var issues = milestone.issues;
+    if (data.stats.isEmpty) return;
+
+    var issues = data.issues;
     // Total number of points in the milestone.
     var total = issues.open.size + issues.closed.size;
 
     // An issue may have been closed before the start of a milestone.
     if (issues.closed.size > 0) {
       var head = issues.closed.list[0].closed_at;
-      if (issues.length && milestone.created_at > head) {
+      if (issues.length && data.created_at > head) {
         // This is the new start.
-        milestone.created_at = head;
+        data.created_at = head;
       }
     }
 
     // Set created date to the beginning of the day, makes for a better display
     //  when issues get closed right at the beginning.
-    milestone.created_at = (0, _moment2.default)(milestone.created_at, _moment2.default.ISO_8601).startOf('day').toISOString();
+    data.created_at = (0, _moment2.default)(data.created_at, _moment2.default.ISO_8601).startOf('day').toISOString();
 
     // Actual, ideal & trend lines.
-    var actual = _lines2.default.actual(issues.closed.list, milestone.created_at, total);
-    var ideal = _lines2.default.ideal(milestone.created_at, milestone.due_on, total);
-    var trend = _lines2.default.trend(actual, milestone.created_at, milestone.due_on);
+    var actual = _lines2.default.actual(issues.closed.list, data.created_at, total);
+    var ideal = _lines2.default.ideal(data.created_at, data.due_on, total);
+    var trend = _lines2.default.trend(actual, data.created_at, data.due_on);
 
     // Get available space.
 
@@ -56085,7 +56044,7 @@ exports.default = _react2.default.createClass({
     var y = _d2.default.scale.linear().range([height, 0]);
 
     // Axes.
-    var xAxis = _axes2.default.time(height, x, milestone.stats.span);
+    var xAxis = _axes2.default.time(height, x, data.stats.span);
     var yAxis = _axes2.default.points(width, y);
 
     // Line generator.
@@ -56112,7 +56071,7 @@ exports.default = _react2.default.createClass({
     svg.append("g").attr("class", "x axis day").attr("transform", 'translate(0,' + height + ')').call(xAxis);
 
     // Add the years x-axis?
-    var yrAxis = _axes2.default.year(height, xAxis, milestone.stats.span);
+    var yrAxis = _axes2.default.year(height, xAxis, data.stats.span);
 
     svg.append("g").attr("class", "x axis year").attr("transform", 'translate(0,' + height + ')').call(yrAxis);
 
@@ -56168,7 +56127,7 @@ exports.default = _react2.default.createClass({
   }
 });
 
-},{"../modules/chart/axes.js":245,"../modules/chart/lines.js":246,"../modules/format.js":247,"d3":5,"d3-tip":4,"moment":42,"react":205}],227:[function(require,module,exports){
+},{"../modules/chart/axes.js":245,"../modules/chart/lines.js":246,"d3":5,"d3-tip":4,"moment":42,"react":205}],227:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -57184,6 +57143,10 @@ var _PageMixin = require('../../lib/PageMixin.js');
 
 var _PageMixin2 = _interopRequireDefault(_PageMixin);
 
+var _format = require('../../modules/format.js');
+
+var _format2 = _interopRequireDefault(_format);
+
 var _Notify = require('../Notify.jsx');
 
 var _Notify2 = _interopRequireDefault(_Notify);
@@ -57212,7 +57175,7 @@ exports.default = _react2.default.createClass({
     var _this = this;
 
     var content = undefined;
-    if (!this.state.app.loading) {
+    if (!this.state.app.system.loading) {
       var projects = this.state.projects;
       // Find the milestone.
       var milestone = undefined;
@@ -57229,7 +57192,45 @@ exports.default = _react2.default.createClass({
         return false;
       });
 
-      if (milestone) content = _react2.default.createElement(_Chart2.default, { milestone: milestone });
+      if (milestone) {
+        var description = undefined;
+        if (milestone.description) {
+          description = _format2.default.markdown(milestone.description);
+        }
+
+        content = _react2.default.createElement(
+          'div',
+          null,
+          _react2.default.createElement(
+            'div',
+            { id: 'title' },
+            _react2.default.createElement(
+              'div',
+              { className: 'wrap' },
+              _react2.default.createElement(
+                'h2',
+                { className: 'title' },
+                _format2.default.title(milestone.title)
+              ),
+              _react2.default.createElement(
+                'span',
+                { className: 'sub' },
+                _format2.default.due(milestone.due_on)
+              ),
+              _react2.default.createElement(
+                'div',
+                { className: 'description' },
+                description
+              )
+            )
+          ),
+          _react2.default.createElement(
+            'div',
+            { id: 'content', className: 'wrap' },
+            _react2.default.createElement(_Chart2.default, { data: milestone })
+          )
+        );
+      }
     }
 
     return _react2.default.createElement(
@@ -57247,7 +57248,7 @@ exports.default = _react2.default.createClass({
   }
 });
 
-},{"../../lib/PageMixin.js":243,"../Chart.jsx":226,"../Footer.jsx":228,"../Header.jsx":229,"../Notify.jsx":234,"lodash":39,"react":205}],238:[function(require,module,exports){
+},{"../../lib/PageMixin.js":243,"../../modules/format.js":247,"../Chart.jsx":226,"../Footer.jsx":228,"../Header.jsx":229,"../Notify.jsx":234,"lodash":39,"react":205}],238:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -57257,6 +57258,10 @@ Object.defineProperty(exports, "__esModule", {
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
 
 var _PageMixin = require('../../lib/PageMixin.js');
 
@@ -57278,6 +57283,10 @@ var _Milestones = require('../Milestones.jsx');
 
 var _Milestones2 = _interopRequireDefault(_Milestones);
 
+var _Chart = require('../Chart.jsx');
+
+var _Chart2 = _interopRequireDefault(_Chart);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = _react2.default.createClass({
@@ -57287,10 +57296,60 @@ exports.default = _react2.default.createClass({
   mixins: [_PageMixin2.default],
 
   render: function render() {
+    var _this = this;
+
     var content = undefined;
-    if (!this.state.app.loading) {
-      var projects = this.state.projects;
-      content = _react2.default.createElement(_Milestones2.default, { projects: projects, project: this.props });
+    if (!this.state.app.system.loading) {
+      (function () {
+        var projects = _this.state.projects;
+
+        // Create the all milestones payload.
+        var data = undefined;
+        _lodash2.default.find(projects.list, function (obj) {
+          if (obj.owner == _this.props.owner && obj.name == _this.props.name) {
+            if (obj.milestones) {
+              (function () {
+                var created_at = 'Z',
+                    due_on = '0',
+                    issues = {
+                  'closed': { 'list': [], 'size': 0 },
+                  'open': { 'list': [], 'size': 0 }
+                };
+                // Merge all the milestone issues together.
+                (0, _lodash2.default)(obj.milestones).filter(function (m) {
+                  return !m.stats.isEmpty;
+                }).each(function (m) {
+                  if (m.created_at < created_at) created_at = m.created_at;
+                  if (m.due_on > due_on) due_on = m.due_on;
+                  _lodash2.default.each(['closed', 'open'], function (k) {
+                    issues[k].list = issues[k].list.concat(m.issues[k].list);
+                    issues[k].size += m.issues[k].size;
+                  });
+                }).value();
+
+                issues.closed.list = _lodash2.default.sortBy(issues.closed.list, 'closed_at');
+
+                // A meta milestone.
+                data = { issues: issues, created_at: created_at, 'stats': { 'isEmpty': false } };
+
+                if (due_on != '0') data.due_on = due_on;
+              })();
+            }
+            return true;
+          }
+        });
+
+        if (data) {
+          content = _react2.default.createElement(
+            'div',
+            null,
+            _react2.default.createElement(_Chart2.default, { data: data, style: { 'marginBottom': '40px' } }),
+            _react2.default.createElement(_Milestones2.default, { projects: projects, project: _this.props })
+          );
+        } else {
+          content = _react2.default.createElement(_Milestones2.default, { projects: projects, project: _this.props });
+        }
+      })();
     }
 
     return _react2.default.createElement(
@@ -57327,7 +57386,7 @@ exports.default = _react2.default.createClass({
   }
 });
 
-},{"../../lib/PageMixin.js":243,"../Footer.jsx":228,"../Header.jsx":229,"../Milestones.jsx":233,"../Notify.jsx":234,"react":205}],239:[function(require,module,exports){
+},{"../../lib/PageMixin.js":243,"../Chart.jsx":226,"../Footer.jsx":228,"../Header.jsx":229,"../Milestones.jsx":233,"../Notify.jsx":234,"lodash":39,"react":205}],239:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -57421,7 +57480,7 @@ exports.default = _react2.default.createClass({
   },
   render: function render() {
     var content = undefined;
-    if (!this.state.app.loading) {
+    if (!this.state.app.system.loading) {
       var projects = this.state.projects;
       if (projects.list.length) {
         if (!this.state.edit) {
@@ -57844,20 +57903,31 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = {
   time: function time(height, x, span) {
-    // Tick time format based on number of days we display.
-    var specifier = span < 4 ? '' : span < 14 ? '%a' : span < 32 ? '%m/%d' : '%b';
-    var format = _d2.default.time.format.utc(specifier);
-
     return _d2.default.svg.axis().scale(x).orient("bottom")
     // Show vertical lines...
     .tickSize(-height)
+    //  limit the number of ticks
+    .ticks(7)
     //  tick time format...
-    .tickFormat(format)
-    //  and give us a spacer.
-    .tickPadding(10);
+    .tickFormat(_d2.default.time.format(function () {
+      switch (true) {
+        case span < 4:
+          return '';
+        // Two weeks.
+        case span < 14:
+          return '%a';
+        // 3 months.
+        case span < 3 * 30:
+          return '%m/%d';
+        default:
+          return '%b';
+      }
+    }()));
   },
   year: function year(height, xAxis, span) {
-    return xAxis.orient("top").tickSize(height).tickFormat(_d2.default.time.format.utc('%Y')).ticks(span / 365);
+    return xAxis.orient("top").tickSize(height).tickFormat(function (d) {
+      return d.getFullYear();
+    }).ticks(span / 365);
   },
   points: function points(width, y) {
     return _d2.default.svg.axis().scale(y).orient("left").tickSize(-width).ticks(5).tickPadding(10);
@@ -58946,9 +59016,6 @@ var ProjectsStore = function (_Store) {
 
       var projects = this.get('list');
 
-      // Quit if we have no projects.
-      if (!projects.length) return;
-
       // Wait for the user to get resolved.
       this.get('user', this.cb(function (user) {
         // async
@@ -59353,9 +59420,9 @@ var ProjectsStore = function (_Store) {
       // Notify?
       if (say) this.notify(milestone);
 
-      // We are supposed to exist already.
+      // If project hasn't been found, add it behind the scenes.
       if ((i = this.findIndex(project)) < 0) {
-        throw 500;
+        i = this.push('list', project);
       }
 
       // Does the milestone exist already?
